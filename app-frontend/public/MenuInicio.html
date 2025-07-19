@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/menuInicio.css">
+    <title>Menú</title>
+</head>
+<body>
+    <header>
+        <h1>Menu Proyecto Josman</h1>
+    </header>
+    <main>
+        <div>
+           <nav>
+               <button id="menuInicio">Menú</button>
+               <ul id="menuDesplegable">
+                   <li><a href="#">Inicio</a></li>
+                   <li><a href="#">Registrarse</a></li>
+                   <li><a href="#">Compras</a></li>
+               </ul>
+           </nav>
+           <nav>
+                <a href="index.html"><button id="cerrarSesion">Cerrar Sesión</button></a>
+            </nav>
+        </div>
+        <div>
+            <h3>Firma de documentos</h3>
+            <p>Estado del servicio</p>
+            <button id="estadoAPI">Estado API</button>
+            <p>Individual</p>
+            <input type="text" id="firmante" placeholder="Nombre del Firmante">
+            <button id="firmaIndividual">Firma Individual</button>
+            <p>Colectiva a un archivo PDF</p>
+            <button id="firmaColectiva">Varios Firmantes</button>
+            <p>Coletiva a varios archivos PDF</p>
+            <button id="firmaColectivaArchivos">Varios Archivos</button>
+            <p>Consultar tarea de Firma</p>
+            <input type="UUID" id="idConsulta" placeholder="UUID">
+            <button id="botonConsulta">Consultar</button>
+            <span id="idConsulta-error" class="error-message"></span>
+        </div>
+    </main>
+    <footer>
+        <p>@&copy; 2025 Proyecto Josman</p>
+    </footer>
+    <script src="js/menuInicio.js"></script>
+</body>
+</html>
