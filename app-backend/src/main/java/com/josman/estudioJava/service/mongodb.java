@@ -24,8 +24,10 @@ public class mongodb {
     @Value("${spring.data.mongodb.uri:mongodb://localhost:27017}")
     private String mongoUri;
     @Value("${spring.data.mongodb.database:credenciales}")
-    private String dbName;
-    @Value("${mongodb.collection.usuarios:user_login}")
+    private String databaseName;
+
+
+    @Value("${mongodb.collection.datos:user_login}")
     private String collectionName;
 
     private MongoClient mongoClient;
@@ -42,9 +44,9 @@ public class mongodb {
     public void init() {
         try {
             mongoClient = MongoClients.create(mongoUri);
-            database = mongoClient.getDatabase(dbName);
+            database = mongoClient.getDatabase(databaseName);
             collection = database.getCollection(collectionName);
-            logger.info("Conexión exitosa a MongoDB. Base de datos: {}, Colección: {}", dbName, collectionName);
+            logger.info("Conexión exitosa a MongoDB. Base de datos: {}, Colección: {}", databaseName, collectionName);
         } catch (Exception e) {
             logger.error("Error al conectar a MongoDB: " + e.getMessage());
             throw new IllegalStateException("Fallo al conectar con MongoDB", e);
