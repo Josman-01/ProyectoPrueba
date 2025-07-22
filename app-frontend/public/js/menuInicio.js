@@ -57,54 +57,73 @@ statusAPI.addEventListener("click", async function obtenerEstadoAPI() {
         alert("Error en la solicitud:" + error);
     }
 });
+//------------------------------------------//
 
-//Conversion del archivo PDF a Base64
-    const filepdf = document.getElementById("archivopdf");
-    const botonvalid = document.getElementById("validarpdf");
-    const messageElement = document.getElementById("messagevalid");
+// Variables para almacenar los datos del archivo procesado
+let processedFile = null; // Variable para guardar el objeto con nombre, contenidoBase64, tipo
 
-    botonvalid.addEventListener("click", () => {
-        const file = filepdf.files[0];
+// Conversion del archivo PDF a Base64
+const filepdf = document.getElementById("archivopdf");
+const botonvalid = document.getElementById("validarpdf"); // Este botón solo valida y prepara los datos
+const messageElement = document.getElementById("messagevalid");
+
+botonvalid.addEventListener("click", () => {
+    const file = filepdf.files[0];
+    
+    if (!file) {
+        messageElement.textContent = "Por favor, selecciona un archivo PDF.";
+        messageElement.style.color = "orange";
+        processedFile = null; // Limpia cualquier archivo procesado previamente
+        return;
+    } else if (file.type !== "application/pdf") {
+        messageElement.textContent = "El archivo no es un PDF válido.";
+        messageElement.style.color = "orange";
+        processedFile = null; // Limpia cualquier archivo procesado previamente
+        return;
+    } else {
+        messageElement.textContent = "Archivo PDF válido. Listo para firmar.";
+        messageElement.style.color = "green";
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const base64data = base64.split(",")[1];
         
-        let dataToSend = null;
+        // Almacena los datos en la variable de alcance más amplio
+        processedFile = {
+            nombre: file.name,
+            contenidoBase64: base64data,
+            tipo: "pdf"
+        };
+        console.log("Archivo procesado:", JSON.stringify(processedFile, null, 2));
+    };
+    reader.readAsDataURL(file); // Inicia la lectura del archivo
+});
 
-
-        if (!file) {
-            messageElement.textContent = "Por favor, selecciona un archivo PDF.";
-            messageElement.style.color = "orange";
-            return;
-        }else if (file.type !== "application/pdf") {
-            messageElement.textContent = "El archivo no es un PDF válido.";
-            messageElement.style.color = "orange";
-            return
-        } else {
-            messageElement.textContent = "Archivo PDF válido.";
-            messageElement.style.color = "green";
-        }
-
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target.result;
-            const base64data = base64.split(",")[1];
-            
-            dataToSend = {
-                nombre: file.name,
-                contenidoBase64: base64data,
-                tipo: file.type
-            };
-            const dataa = JSON.stringify(dataToSend);
-            console.log(dataa);
-        
-        }
-
-    });
-
-//Solicitud Firma individual un solo archivo
+// Solicitud Firma individual un solo archivo
 solicitudIndividual.addEventListener("click", async function solicitudfirma() {
     try {
+        // Asegúrate de que un archivo haya sido procesado antes de intentar enviar
+        if (!processedFile) {
+            alert("Por favor, selecciona y valida un archivo PDF primero.");
+            return;
+        }
+        if (!nombrefirmante.value.trim()) {
+            alert("Por favor, ingresa el nombre del firmante.");
+            return;
+        }
         
         const urlAPI = 'http://localhost:8080/api/firmas/solicitar';
-        const datos = { firmante: nombrefirmante.value, archivo: dataToSend.value, tipoDocumento: "pdf"};
+        
+        // Aquí usamos la variable processedFile que ya contiene los datos del PDF
+        const datos = { 
+            firmante: nombrefirmante.value, 
+            tipoDocumento: "pdf", 
+            archivo: processedFile // Usamos directamente el objeto processedFile
+        };
+
+        console.log("Datos a enviar en la solicitud individual:", JSON.stringify(datos, null, 2));
 
         const response = await fetch(urlAPI, {
             method: 'POST',
@@ -115,18 +134,21 @@ solicitudIndividual.addEventListener("click", async function solicitudfirma() {
         });
 
         if (!response.ok) {
-            throw new Error('Error en la solicitud: ${response.status}');
+            // Manejo de errores más específico
+            const errorText = await response.text();
+            throw new Error(`Error en la solicitud: ${response.status} - ${errorText}`);
         } 
 
-        const data = await response.text();
+        const data = await response.text(); // Asumo que la API devuelve JSON
         console.log("Solicitud enviada exitosamente:", data);
-        alert("Solicitud enviada exitosamente:" + data.firmante);
+        alert("Solicitud enviada exitosamente:" + (data));
     } catch (error) {
         console.error("Error en la Solicitud: ", error);
-        alert("Error en la solicitud:" + error.message);
+        alert("Error en la solicitud: " + error.message);
     }
 });
 
+//--------------------------------------//
 //Solicitud Firma Colectiva varios firmantes
 solicitudFirmantes.addEventListener("click", async function variosfirmantes() {
     try {

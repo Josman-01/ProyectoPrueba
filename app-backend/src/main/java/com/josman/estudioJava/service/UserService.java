@@ -62,7 +62,11 @@ public class UserService {
         if (userRepository.findByUsername(username).isPresent()) {
             logger.error("El nombre de usuario ya existe: {}", username);
             throw new RuntimeException("El nombre de usuario ya existe: " + username);
+        } else if (userRepository.findByEmail(email).isPresent()) {
+            logger.error("El email ya está registrado: {}", email);
+            throw new RuntimeException("El email ya está registrado: " + email);
         }
+        // --- Fin de Validaciones de Entrada ---)
 
         User newUser = new User();
         newUser.setUsername(username);
