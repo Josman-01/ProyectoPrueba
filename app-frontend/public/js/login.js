@@ -48,7 +48,7 @@ function validateInputs() {
         passwordInput.classList.add("error");
         isValid = false
     } else if (!passwordRegex.test(password)) {
-        passwordError.textContent = "La contraseña debe tener al menos 8 caracteres, una mayúscula y un número";
+        passwordError.textContent = "Contraseña incorrecta";
         passwordError.style.color = "red";
         passwordInput.classList.add("error");
         isValid = false
@@ -58,10 +58,36 @@ function validateInputs() {
 
     if (isValid) {
         console.log("Formulario válido");
-        window.location.href = "MenuInicio.html";
     }
     return isValid;
 }
+
+loginButton.addEventListener("click", async function login() {
+     
+    try {
+        const urlAPI = "http://localhost:8081/api/auth/login";
+        const datos = {username: usernameInput.value, password: passwordInput.value};
+
+        const response = await fetch(urlAPI, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        });
+        if (!response.ok) {
+            throw new Error('Error en la solicitud: ${response.status}');
+        }
+
+        const data = await response.text();
+        console.log("Solicitud enviada exitosamente:", data);
+        
+        window.location.href = "MenuInicio.html";
+    } catch (error) {
+        console.error("Error en la Solicitud:", error);
+    }
+});
+
 
 //Evento de validacion y limpieza de inputs
 loginButton.addEventListener("click", validateInputs);

@@ -11,7 +11,7 @@
         <h1>Menu Proyecto Josman</h1>
     </header>
     <main>
-        <div>
+        <div id="cabeceramenu">
            <nav>
                <button id="menuInicio">Menú</button>
                <ul id="menuDesplegable">
@@ -30,7 +30,10 @@
             <button id="estadoAPI">Estado API</button>
             <p>Individual</p>
             <input type="text" id="firmante" placeholder="Nombre del Firmante">
+            <input type="file" id="archivopdf" accept=".pdf">
+            <button id="validarpdf">Subir PDF</button>
             <button id="firmaIndividual">Firma Individual</button>
+            <p id="messagevalid"></p>
             <p>Colectiva a un archivo PDF</p>
             <button id="firmaColectiva">Varios Firmantes</button>
             <p>Coletiva a varios archivos PDF</p>
@@ -42,7 +45,7 @@
         </div>
     </main>
     <footer>
-        <p>@&copy; 2025 Proyecto Josman</p>
+        <p id="footer">@&copy; 2025 Proyecto Josman</p>
     </footer>
     <script src="js/menuInicio.js"></script>
 </body>

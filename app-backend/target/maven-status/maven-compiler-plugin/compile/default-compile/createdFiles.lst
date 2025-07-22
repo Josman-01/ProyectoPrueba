@@ -1,0 +1,14 @@
+com\josman\estudioJava\controller\AuthController.class
+com\josman\estudioJava\service\mongodb.class
+com\josman\estudioJava\config\MongoConfig.class
+com\josman\estudioJava\dto\ValidEmailRequest.class
+com\josman\estudioJava\controller\CredentialsController.class
+com\josman\estudioJava\dto\ChangePasswordRequest.class
+com\josman\estudioJava\config\SecurityConfig.class
+com\josman\estudioJava\service\UserService.class
+com\josman\estudioJava\dto\LoginRequest.class
+com\josman\estudioJava\repository\UserRepository.class
+com\josman\estudioJava\model\User.class
+com\josman\estudioJava\estudioJavaApp.class
+com\josman\estudioJava\util\ValidationUtils.class
+com\josman\estudioJava\dto\RegisterRequest.class

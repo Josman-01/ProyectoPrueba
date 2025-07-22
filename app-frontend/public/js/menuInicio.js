@@ -9,6 +9,8 @@ const cerrarSesion = document.getElementById("cerrarSesion");
 const statusAPI = document.getElementById("estadoAPI");
 const solicitudIndividual = document.getElementById("firmaIndividual");
 const nombrefirmante = document.getElementById("firmante");
+const nombreArchivo = document.getElementById("nombrearchivo");
+const contenidoArchivo = document.getElementById("contenidoArchivo");
 const solicitudFirmantes = document.getElementById("firmaColectiva");
 const solicitudArchivos = document.getElementById("firmaColectivaArchivos")
 
@@ -37,8 +39,7 @@ cerrarSesion.addEventListener("click", function() {
 });
 
 //Estado del API
-statusAPI.addEventListener("click", obtenerEstadoAPI);
-async function obtenerEstadoAPI() {
+statusAPI.addEventListener("click", async function obtenerEstadoAPI() {
     try {
         const urlAPI = "http://localhost:8080/api/firmas/estado";
             
@@ -55,15 +56,55 @@ async function obtenerEstadoAPI() {
         console.log("Error en la solicitud:", error);
         alert("Error en la solicitud:" + error);
     }
-}
+});
+
+//Conversion del archivo PDF a Base64
+    const filepdf = document.getElementById("archivopdf");
+    const botonvalid = document.getElementById("validarpdf");
+    const messageElement = document.getElementById("messagevalid");
+
+    botonvalid.addEventListener("click", () => {
+        const file = filepdf.files[0];
+        
+        let dataToSend = null;
+
+
+        if (!file) {
+            messageElement.textContent = "Por favor, selecciona un archivo PDF.";
+            messageElement.style.color = "orange";
+            return;
+        }else if (file.type !== "application/pdf") {
+            messageElement.textContent = "El archivo no es un PDF válido.";
+            messageElement.style.color = "orange";
+            return
+        } else {
+            messageElement.textContent = "Archivo PDF válido.";
+            messageElement.style.color = "green";
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64 = event.target.result;
+            const base64data = base64.split(",")[1];
+            
+            dataToSend = {
+                nombre: file.name,
+                contenidoBase64: base64data,
+                tipo: file.type
+            };
+            const dataa = JSON.stringify(dataToSend);
+            console.log(dataa);
+        
+        }
+
+    });
 
 //Solicitud Firma individual un solo archivo
-solicitudIndividual.addEventListener("click", solicitudfirma);
-
-async function solicitudfirma(firmante, tipoDocumento, archivo, nombre, contenidoBase64, tipo) {
+solicitudIndividual.addEventListener("click", async function solicitudfirma() {
     try {
+        
         const urlAPI = 'http://localhost:8080/api/firmas/solicitar';
-        const datos = { firmante: nombrefirmante.value, archivo:{nombre: "pruebadesdejs.pdf", contenidoBase64: "VBERy0xLjQKJ...", tipo: "pdf"}, tipoDocumento: "pdf"};
+        const datos = { firmante: nombrefirmante.value, archivo: dataToSend.value, tipoDocumento: "pdf"};
 
         const response = await fetch(urlAPI, {
             method: 'POST',
@@ -84,11 +125,10 @@ async function solicitudfirma(firmante, tipoDocumento, archivo, nombre, contenid
         console.error("Error en la Solicitud: ", error);
         alert("Error en la solicitud:" + error.message);
     }
-}
+});
 
 //Solicitud Firma Colectiva varios firmantes
-solicitudFirmantes.addEventListener("click", variosfirmantes);
-async function variosfirmantes(archivo, nombre, contenidoBase64, tipo, firmantes) {
+solicitudFirmantes.addEventListener("click", async function variosfirmantes() {
     try {
         const urlAPI = "http://localhost:8080/api/firmas/solicitar-workflow";
         const datos = {archivo:{nombre: "pruebadesdejs.pdf", contenidoBase64: "VBERy0xLjQKJ...", tipo: "pdf"}, firmantes: ["Juana", "Pedro", "Maria"]};
@@ -112,11 +152,10 @@ async function variosfirmantes(archivo, nombre, contenidoBase64, tipo, firmantes
         console.error("Error en la Solicitud:", error);
         alert("Error en la solicitud:" + error.message);
     }
-}
+});
 
 //Solicitud Firma Colectiva varios archivos
-solicitudArchivos.addEventListener("click", variosarchivos);
-async function variosarchivos(firmanteUnico, archivos, nombre, contenidoBase64, tipo) {
+solicitudArchivos.addEventListener("click", async function variosarchivos() {
     try {
         const urlAPI = "http://localhost:8080/api/firmas/solicitar-workflow";
         const datos = {firmanteUnico: "Juana", archivos: [{nombre: "prueba1.pdf", contenidoBase64: "VBERy0xLjQKJ...", tipo: "pdf"}, {nombre: "prueba2.pdf", contenidoBase64: "VBERy0xLjQKJ...", tipo: "pdf"}, {nombre: "prueba3.pdf", contenidoBase64: "VBERy0xLjQKJ...", tipo: "pdf"}]};
@@ -145,7 +184,7 @@ async function variosarchivos(firmanteUnico, archivos, nombre, contenidoBase64, 
         console.log("ID valido");
     }
     return isValid;
-}
+});
 
 //Funcion para limpiar los errores
 function clearErrors() {

@@ -87,10 +87,38 @@ function validateInputsRegister(){
         console.log("Contraseña válida");
     }
     if (isValidRegister) {
-        alert("Datos registrados correctamente");
     }
     return isValidRegister;
 }
+registerbutton.addEventListener("click", async function registradatos () {
+    const username = usernameregister.value.trim();
+    const password = passwordregister.value.trim();
+    const email = emailregister.value.trim();
+
+    try {
+        const urlAPI = "http://localhost:8081/api/auth/register";
+        const datos = {username: username, password: password, email: email};
+
+        const response = await fetch(urlAPI, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        });
+
+        if(!response.ok ){
+            throw new Error('Error en la solicitud: ${response.status}');
+        }
+
+        const data = await response.text();
+        console.log("Solicitud enviada exitosamente:", data);
+        window.location.href = "index.html";
+    } catch (error) {
+        console.error("Error en la Solicitud:", error);
+    }
+});
+
 
 //Eventos de validacion y limpieza
 registerbutton.addEventListener("click", validateInputsRegister);
