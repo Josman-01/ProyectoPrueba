@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria; // Importar Criteria
+import org.springframework.data.mongodb.core.query.Query; // Importar Query
 import org.springframework.stereotype.Service;
 
 import com.josman.estudioJava.model.User;
@@ -17,15 +19,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
 @Service
-public class mongodb {
+public class MongoDBService {
     
-    private static final Logger logger = LoggerFactory.getLogger(mongodb.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoDBService.class);
 
     @Value("${spring.data.mongodb.uri:mongodb://localhost:27017}")
     private String mongoUri;
     @Value("${spring.data.mongodb.database:credenciales}")
     private String databaseName;
-
 
     @Value("${mongodb.collection.datos:user_login}")
     private String collectionName;
@@ -36,7 +37,7 @@ public class mongodb {
 
     private final MongoTemplate mongoTemplate;
 
-    public mongodb(MongoTemplate mongoTemplate) {
+    public MongoDBService(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
@@ -66,4 +67,33 @@ public class mongodb {
         logger.info("Usuario '{}' guardado/actualizado en MongoDB.", user.getUsername());
     }
 
+    /**
+     * Busca un usuario por su nombre de usuario.
+     * @param username El nombre de usuario a buscar.
+     * @return El objeto User si se encuentra, o null si no existe.
+     */
+    public User findByUsername(String username) {
+        Query query = new Query(Criteria.where("username").is(username));
+        return mongoTemplate.findOne(query, User.class, collectionName);
+    }
+
+    /**
+     * Verifica si un usuario con el nombre de usuario dado ya existe en la base de datos.
+     * @param username El nombre de usuario a verificar.
+     * @return true si el usuario existe, false en caso contrario.
+     */
+    public boolean userExists(String username) {
+        Query query = new Query(Criteria.where("username").is(username));
+        return mongoTemplate.exists(query, User.class, collectionName);
+    }
+
+    /**
+     * Verifica si un usuario con el correo electrónico dado ya existe en la base de datos.
+     * @param email El correo electrónico a verificar.
+     * @return true si el correo electrónico ya está registrado, false en caso contrario.
+     */
+    public boolean emailExists(String email) {
+        Query query = new Query(Criteria.where("email").is(email));
+        return mongoTemplate.exists(query, User.class, collectionName);
+    }
 }

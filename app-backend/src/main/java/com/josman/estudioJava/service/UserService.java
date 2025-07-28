@@ -8,70 +8,83 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.josman.estudioJava.model.Role;
 import com.josman.estudioJava.model.User;
+import com.josman.estudioJava.repository.RoleRepository;
 import com.josman.estudioJava.repository.UserRepository;
-import com.josman.estudioJava.util.ValidationUtils; // Para usar Pattern
+import com.josman.estudioJava.util.ValidationUtils;
 
 @Service
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerNewUser(String username, String rawPassword, String email) {
-        logger.info("Intentando registrar un nuevo usuario con nombre de usuario: {}", username);
+    public User registerNewUser(User userToRegister) {
+        logger.info("Intentando registrar un nuevo usuario con nombre de usuario: {}", userToRegister.getUsername());
 
         // --- Validaciones de Entrada ---
-        if (ValidationUtils.isNullOrEmpty(username)) {
+        if (ValidationUtils.isNullOrEmpty(userToRegister.getUsername())) {
             logger.error("Error de validación: El nombre de usuario no puede ser nulo o vacío.");
             throw new IllegalArgumentException("El nombre de usuario no puede ser nulo o vacío.");
         }
-        if (username.length() < 5) {
+        if (userToRegister.getUsername().length() < 5) {
             logger.error("Error de validación: El nombre de usuario debe tener al menos 5 caracteres.");
             throw new IllegalArgumentException("El nombre de usuario debe tener al menos 5 caracteres.");
         }
 
-        if (ValidationUtils.isNullOrEmpty(rawPassword)) {
+        if (ValidationUtils.isNullOrEmpty(userToRegister.getPassword())) {
             logger.error("Error de validación: La contraseña no puede ser nula o vacía.");
             throw new IllegalArgumentException("La contraseña no puede ser nula o vacía.");
         }
-        Matcher passwordMatcher = ValidationUtils.PASSWORD_PATTERN.matcher(rawPassword);
+        Matcher passwordMatcher = ValidationUtils.PASSWORD_PATTERN.matcher(userToRegister.getPassword());
         if (!passwordMatcher.matches()) {
             logger.error("Error de validación: La contraseña no cumple con los requisitos de seguridad.");
             throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.");
         }
 
-        if (ValidationUtils.isNullOrEmpty(email)) {
+        if (ValidationUtils.isNullOrEmpty(userToRegister.getEmail())) {
             logger.error("Error de validación: El email no puede ser nulo o vacío.");
             throw new IllegalArgumentException("El email no puede ser nulo o vacío.");
         }
-        Matcher emailMatcher = ValidationUtils.EMAIL_PATTERN.matcher(email);
+        Matcher emailMatcher = ValidationUtils.EMAIL_PATTERN.matcher(userToRegister.getEmail());
         if (!emailMatcher.matches()) {
             logger.error("Error de validación: El formato del email es inválido.");
             throw new IllegalArgumentException("El formato del email es inválido.");
         }
 
-        // --- Fin de Validaciones de Entrada ---
-
-        if (userRepository.findByUsername(username).isPresent()) {
-            logger.error("El nombre de usuario ya existe: {}", username);
-            throw new RuntimeException("El nombre de usuario ya existe: " + username);
-        } else if (userRepository.findByEmail(email).isPresent()) {
-            logger.error("El email ya está registrado: {}", email);
-            throw new RuntimeException("El email ya está registrado: " + email);
+        if (userRepository.findByUsername(userToRegister.getUsername()).isPresent()) {
+            logger.error("El nombre de usuario ya existe: {}", userToRegister.getUsername());
+            throw new RuntimeException("El nombre de usuario ya existe: " + userToRegister.getUsername());
+        } else if (userRepository.findByEmail(userToRegister.getEmail()).isPresent()) {
+            logger.error("El email ya está registrado: {}", userToRegister.getEmail());
+            throw new RuntimeException("El email ya está registrado: " + userToRegister.getEmail());
         }
-        // --- Fin de Validaciones de Entrada ---)
+        // --- Fin de Validaciones de Entrada ---
+        Role roleUser = roleRepository.findByName("ROLE_USER").orElseThrow(()->new RuntimeException("Rol no encontrado"));
+        // Default a USER si no se especifica
+        Optional<Role> foundRole = roleRepository.findByName(roleUser.getName());
+
+        if (foundRole.isEmpty()) {
+            logger.error("Rol no encontrado: {}", roleUser);
+            throw new RuntimeException("Rol no encontrado: " + roleUser);
+        }
+
+        Role assignedRole = foundRole.get();
 
         User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setPassword(passwordEncoder.encode(rawPassword));
-        newUser.setEmail(email);
+        newUser.setUsername(userToRegister.getUsername());
+        newUser.setPassword(passwordEncoder.encode(userToRegister.getPassword()));
+        newUser.setEmail(userToRegister.getEmail());
+        newUser.setRole(assignedRole);
 
         logger.info("Guardando nuevo usuario en la base de datos: {}", newUser.getUsername());
         return userRepository.save(newUser);
@@ -80,8 +93,6 @@ public class UserService {
     public boolean validateUserCredentials(String username, String rawPassword) {
         logger.info("Intento de inicio de sesión para el usuario: {}", username);
 
-        // Opcional: Podrías añadir validación de null/empty aquí también para el login,
-        // aunque un login con campos vacíos probablemente fallaría igual al no encontrar el usuario.
         if (ValidationUtils.isNullOrEmpty(username) || ValidationUtils.isNullOrEmpty(rawPassword)) {
             logger.warn("Fallo de inicio de sesión: Nombre de usuario o contraseña vacíos.");
             return false;
@@ -134,7 +145,7 @@ public class UserService {
 
         if (userOptional.isEmpty()){
             logger.warn("Fallo de cambio de contraseña: Usuario con email '{}' no encontrado.", email);
-            return false;
+            throw new RuntimeException("Usuario con email '" + email + "' no encontrado.");
         }
 
         User user = userOptional.get();
@@ -156,39 +167,5 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
-    }
-
-    public User updatePassword(String email, String newRawPassword) {
-        // Este método ahora contiene lógica duplicada con changePassword.
-        // Es mejor llamar a changePassword si solo necesitas cambiar la contraseña por email.
-        // O este podría ser un método interno auxiliar sin validaciones para casos específicos.
-        // Por ahora, lo dejaré con las validaciones si lo usas directamente.
-
-        // --- Validaciones de Entrada (duplicadas si usas changePassword) ---
-        if (ValidationUtils.isNullOrEmpty(email)) {
-            logger.error("Error de validación: El email no puede ser nulo o vacío en updatePassword.");
-            throw new IllegalArgumentException("El email no puede ser nulo o vacío.");
-        }
-        Matcher emailMatcher = ValidationUtils.EMAIL_PATTERN.matcher(email);
-        if (!emailMatcher.matches()) {
-            logger.error("Error de validación: El formato del email es inválido en updatePassword.");
-            throw new IllegalArgumentException("El formato del email es inválido.");
-        }
-
-        if (ValidationUtils.isNullOrEmpty(newRawPassword)) {
-            logger.error("Error de validación: La nueva contraseña no puede ser nula o vacía en updatePassword.");
-            throw new IllegalArgumentException("La nueva contraseña no puede ser nula o vacía.");
-        }
-        Matcher passwordMatcher = ValidationUtils.PASSWORD_PATTERN.matcher(newRawPassword);
-        if (!passwordMatcher.matches()) {
-            logger.error("Error de validación: La nueva contraseña no cumple con los requisitos de seguridad en updatePassword.");
-            throw new IllegalArgumentException("La nueva contraseña debe tener al menos 8 caracteres, una mayúscula y un número.");
-        }
-        // --- Fin de Validaciones de Entrada ---
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email no encontrado: " + email));
-        user.setPassword(passwordEncoder.encode(newRawPassword));
-        return userRepository.save(user);
     }
 }

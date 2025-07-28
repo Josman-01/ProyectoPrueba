@@ -10,6 +10,8 @@ public class ValidationUtils {
     // Email: contiene un '@' y un '.' después del '@', no necesariamente exhaustivo pero es un buen inicio.
     public static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
 
+    //public static final Pattern TOKEN_PATTERN = Pattern.compile("");
+
     /**
      * Valida si una cadena es nula o está vacía (después de trim).
      * @param str La cadena a validar.

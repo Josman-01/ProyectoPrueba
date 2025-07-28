@@ -1,11 +1,15 @@
 package com.josman.estudioJava.dto;
 
-public class RegisterRequest {
+public class AuthRequest {
     private String username;
     private String password;
-    private String email;
 
-    // Getters y Setters
+    public AuthRequest(String password, String username) {
+        this.password = password;
+        this.username = username;
+    }
+
+    //Getters y Setters
     public String getUsername() {
         return username;
     }
@@ -20,13 +24,5 @@ public class RegisterRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

@@ -85,6 +85,7 @@ loginButton.addEventListener("click", async function login() {
         window.location.href = "MenuInicio.html";
     } catch (error) {
         console.error("Error en la Solicitud:", error);
+        alert("Error en la solicitud:");
     }
 });
 

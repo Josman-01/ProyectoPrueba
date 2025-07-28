@@ -4,29 +4,32 @@ import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field; // Opcional, si el nombre del campo en Mongo es diferente
 
-@Document(collection = "users") // Indica que esta clase se mapea a la colección 'users' en MongoDB
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Document(collection = "datosUsuarios") // Indica que esta clase se mapea a la colección 'users' en MongoDB
 public class User {
 
-    @Id // Marca el campo como el ID principal del documento en MongoDB (generalmente un String)
+    @Id // Marca el campo como el ID principal del documento en MongoDB
     private String id; // MongoDB usa ObjectId por defecto, que Spring mapea a String
 
-    @Field("username") // Opcional: si el campo en la BD se llama diferente a la propiedad
     private String username;
 
     private String password; // Aquí se guardará la contraseña ENCRIPTADA
 
     private String email;
-    // Puedes añadir otros campos
-    // private String email;
-    // private List<String> roles;
 
-    // Getters y Setters
+    // Opcional: Para roles de usuario (ej. "ROLE_USER", "ROLE_ADMIN")
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
+
+
+    //Gettes y Setters
     public String getId() {
         return id;
     }
-
     public void setId(String id) {
         this.id = id;
     }
@@ -34,7 +37,6 @@ public class User {
     public String getUsername() {
         return username;
     }
-
     public void setUsername(String username) {
         this.username = username;
     }
@@ -42,7 +44,6 @@ public class User {
     public String getPassword() {
         return password;
     }
-
     public void setPassword(String password) {
         this.password = password;
     }
@@ -50,21 +51,26 @@ public class User {
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
 
-    // Constructor vacío
-    public User() {
-        this.id = UUID.randomUUID().toString(); // Genera un ID único
+    public Role getRole() {
+        return role;
+    }
+    public void setRole(Role role) {
+        this.role = role;
     }
 
-    // Constructor con campos
-    public User(String username, String password, String email) {
-        this(); // Llama al constructor vacío para inicializar el ID
+    public User() {
+        this.id = UUID.randomUUID().toString();
+    }
+
+    public User(String username, String password, String email, Role role) {
+        this();
         this.username = username;
         this.password = password;
         this.email = email;
+        this.role = role;
     }
 }
